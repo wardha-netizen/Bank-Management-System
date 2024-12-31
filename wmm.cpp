@@ -56,11 +56,19 @@ void openAccount() {
         cin >> account.balance;
     }
 
+	for (int i = 0; i < 3; i++) {
+		if (accounts[i].number == "") {
+			accounts[i] = account;
+			break;
+		}
+	}
+
     cout << "\n\nAccount Created Successfully.\n";
 	saveAccountsToFile();
 }
 
 void display() {
+	loadAccountsFromFile();
     cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
     cout << "Displaying information of all account holders in Fast Bank!\n";
     cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n";
@@ -81,7 +89,7 @@ void display() {
 }
 
 void sortaccounts() {
-    
+	loadAccountsFromFile();
     for (int i = 0; i < 3 - 1; i++) {
         for (int j = 0; j < 3 - i - 1; j++) {
             if (accounts[j].number > accounts[j + 1].number) {
@@ -98,7 +106,7 @@ void sortaccounts() {
 }
 
 void search() {
-    
+	loadAccountsFromFile();
     string key;
     cout << "Enter account number you want to search: ";
     cin >> key;
@@ -125,6 +133,7 @@ void search() {
 }
 
 void updateDeposit() {
+	loadAccountsFromFile();
     string accountNumber;
     int amount;
     cout << "\nEnter the account number you want to deposit into: ";
@@ -139,6 +148,7 @@ void updateDeposit() {
             if (amount > 0) {
                 accounts[i].balance += amount;
                 cout << "\nDeposit successful! Updated account details:\n";
+                saveAccountsToFile();
                 display();
             }
             else {
@@ -153,10 +163,11 @@ void updateDeposit() {
     if (!found) {
         cout << "Account number " << accountNumber << " not found. Please try again.\n";
     }
+	saveAccountsToFile();
 }
 
 void withdraw() {
-    
+	loadAccountsFromFile();
     string accountNumber;
     int amount;
     cout << "\nEnter the account number you want to withdraw from: ";
@@ -172,6 +183,7 @@ void withdraw() {
             if (amount > 0 && amount <= account.balance) {
                 account.balance -= amount;
                 cout << "\nWithdrawal successful! Updated account details:\n";
+				saveAccountsToFile();
                 display();
             }
             else {
@@ -252,7 +264,9 @@ void loadAccountsFromFile() {
 		getline(infile, account.number);
 		getline(infile, balance);
 		account.type = type[0];
-		account.balance = stoi(balance);
+
+		if (balance != "")
+		    account.balance = stoi(balance);
 
 		accounts[i] = account;
 		i++;
@@ -271,21 +285,17 @@ void saveAccountsToFile() {
         if (accounts[i].number == "")
 			continue;
 
-		account* account = &accounts[i];
-
-		if (account == nullptr)
-			continue;
-
-		outfile << account->name << endl;
-		outfile << account->type << endl;
-		outfile << account->number << endl;
-		outfile << account->balance << endl;
+		outfile << accounts[i].name << endl;
+		outfile << accounts[i].type << endl;
+		outfile << accounts[i].number << endl;
+		outfile << accounts[i].balance << endl;
 	}
 
 	outfile.close();
 }
 
 int main() {
+	saveAccountsToFile();
     cout << "\n*************************************************************************************\n";
     cout << "\"Welcome To Fast Bank Management System!\"\n";
     cout << "****************************************************************************************\n";
