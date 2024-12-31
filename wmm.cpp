@@ -294,8 +294,15 @@ void saveAccountsToFile() {
 	outfile.close();
 }
 
+void createFile() {
+	ofstream outfile;
+	outfile.open("accounts.txt");
+	outfile.close();
+}
+
 int main() {
-	saveAccountsToFile();
+    createFile();
+
     cout << "\n*************************************************************************************\n";
     cout << "\"Welcome To Fast Bank Management System!\"\n";
     cout << "****************************************************************************************\n";
