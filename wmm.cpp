@@ -8,61 +8,56 @@
 using namespace std;
 
 struct account {
-    int id;
     string number;
     string name;
     char type;
     int balance;
 } accounts[3];
 
+void saveAccountsToFile();
+
+void loadAccountsFromFile();
+
 void intro() {
-    cout << "\n\n MADE BY : WARDHA KHALID";
+    cout << "\n\n MADE BY : WARDHA KHALID, MAHEEN FATIMA AND MUSAVIR WASEEM";
     cout << "\n UNIVERSITY : BAHRIA UNIVERSITY KARACHI";
     cin.get();
 }
 
 void openAccount() {
-    
-    for (int i = 0; i < 3; i++) {
-        cout << "\nPlease! Enter The account No. : ";
-        cin >> accounts[i].number;
+	loadAccountsFromFile();
 
-        cout << "\nPlease! Enter The Name of The account Holder: ";
-        cin.ignore();
-        getline(cin, accounts[i].name);
+    account account;
+    cout << "\nPlease! Enter The account No. : ";
+	cin.ignore();
+    getline(cin, account.number);
 
-        cout << "\nPlease! Enter Type of The account (C/S): ";
-        char accountTypeInput;
-        cin >> accountTypeInput;
+    cout << "\nPlease! Enter The Name of The account Holder: ";
+    cin.ignore();
+    getline(cin, account.name);
 
-        while (accountTypeInput != 'C' && accountTypeInput != 'S') {
-            cout << "Invalid account type! Please enter C for Current or S for Saving: ";
-            cin >> accounts[i].type;
-            accounts[i].type = toupper(accounts[i].type);
-        }
+    bool isValidInput = true;
+    do {
+        cout << "Please Enter Account Type. Please enter C for Current or S for Saving: ";
+        cin >> account.type;
+        account.type = toupper(account.type);
+        isValidInput = account.type == 'C' || account.type == 'S'; 
 
-        bool isValidInput;
-        do {
-            cout << "Please Enter Account Type. Please enter C for Current or S for Saving: ";
-            cin >> accounts[i].type;
-            accounts[i].type = toupper(accounts[i].type);
-            isValidInput = accounts[i].type == 'C' || accounts[i].type == 'S';
-            if (!isValidInput) {
-                cout << "Invalid Input!. Please try again.";
-            }
-        } while (!isValidInput);
+        if (!isValidInput)
+            cout << "Invalid Input!. Please try again.";
 
-        cout << "\nPlease! Enter The Initial amount (>=440 for Saving and >=1000 for Current): ";
-        cin >> accounts[i].balance;
+    } while (!isValidInput);
 
-        while ((accounts[i].type == 'S' && accounts[i].balance < 440) ||
-            (accounts[i].type == 'C' && accounts[i].balance < 1000)) {
-            cout << "Invalid initial deposit. Please re-enter: ";
-            cin >> accounts[i].balance;
-        }
+    cout << "\nPlease! Enter The Initial amount (>=440 for Saving and >=1000 for Current): ";
+    cin >> account.balance;
 
-        cout << "\n\nAccount Created Successfully.\n";
+    while ((account.type == 'S' && account.balance < 440) || (account.type == 'C' && account.balance < 1000)) {
+        cout << "Invalid initial deposit. Please re-enter: ";
+        cin >> account.balance;
     }
+
+    cout << "\n\nAccount Created Successfully.\n";
+	saveAccountsToFile();
 }
 
 void display() {
@@ -76,7 +71,7 @@ void display() {
         << setw(15) << "Deposit Amount" << endl;
 
     for (int i = 0; i < 3; i++) {
-        if (accounts[i].number != -1) {
+        if (accounts[i].number != "") {
             cout << left << setw(15) << accounts[i].number
                 << setw(25) << accounts[i].name
                 << setw(15) << accounts[i].type
@@ -104,7 +99,7 @@ void sortaccounts() {
 
 void search() {
     
-    int key;
+    string key;
     cout << "Enter account number you want to search: ";
     cin >> key;
 
@@ -130,8 +125,8 @@ void search() {
 }
 
 void updateDeposit() {
-    
-    int accountNumber, amount;
+    string accountNumber;
+    int amount;
     cout << "\nEnter the account number you want to deposit into: ";
     cin >> accountNumber;
 
@@ -162,7 +157,8 @@ void updateDeposit() {
 
 void withdraw() {
     
-    int accountNumber, amount;
+    string accountNumber;
+    int amount;
     cout << "\nEnter the account number you want to withdraw from: ";
     cin >> accountNumber;
 
@@ -193,17 +189,20 @@ void withdraw() {
 }
 
 void deleteAccount() {
-    int accountNumber;
+    string accountNumber;
     cout << "\nEnter the account number you want to delete: ";
     cin >> accountNumber;
+    loadAccountsFromFile();
 
     bool found = false;
     for (int i = 0; i < 3; i++) {
         if (accounts[i].number == accountNumber) {
-            accounts[i].number = -1;
-            accounts[i].name = "";
-            accounts[i].type = '\0';
-            accounts[i].balance = 0;
+			account* foundAccount = &accounts[i];
+            
+            foundAccount->number = "";
+            foundAccount->name = "";
+            foundAccount->type = '\0';
+            foundAccount->balance = 0;
 
             cout << "Account number " << accountNumber << " deleted successfully!\n";
             found = true;
@@ -211,16 +210,16 @@ void deleteAccount() {
         }
     }
 
-    if (!found) {
+    if (!found)   
         cout << "Error! Account number " << accountNumber << " not found. Please enter the correct account number.\n";
-    }
+	
+    saveAccountsToFile();
 }
 
 void addToFile(account* account) {
     ofstream outfile;
     outfile.open("accounts.txt", ios::app);
 
-    outfile << account->id << endl;
     outfile << account->name << endl;
     outfile << account->type << endl;
     outfile << account->number << endl;
@@ -229,26 +228,62 @@ void addToFile(account* account) {
     outfile.close();
 }
 
-void readAll(account[3] accounts) {
-    ifstream infile;
-    infile.open("accounts.txt");
-
-    string id;
-    string type;
-    string balance;
-    account account;
-    getline(infile, id);
-    getline(infile, account.name);
-    getline(infile, type);
-    getline(infile, account.number);
-    getline(infile, balance);
-
-    account.id = stoi(id);
-    account.type = type[0];
-    account.balance = stoi(balance);
+void readAll(account accounts[3]) {
+	loadAccountsFromFile();
+	display();
 }
 
+void loadAccountsFromFile() {
+	ifstream infile;
+	infile.open("accounts.txt");
 
+	if (!infile) {
+		cout << "Error! File not found.\n";
+		return;
+	}
+
+	int i = 0;
+	while (!infile.eof()) {
+		string type;
+		string balance;
+		account account;
+		getline(infile, account.name);
+		getline(infile, type);
+		getline(infile, account.number);
+		getline(infile, balance);
+		account.type = type[0];
+		account.balance = stoi(balance);
+
+		accounts[i] = account;
+		i++;
+	}
+
+	infile.close();
+
+}
+
+void saveAccountsToFile() {
+	ofstream outfile;
+	outfile.open("accounts.txt");
+
+	for (int i = 0; i < 3; i++) {
+
+        if (accounts[i].number == "")
+			continue;
+
+		account* account = &accounts[i];
+
+		if (account == nullptr)
+			continue;
+
+		outfile << account->name << endl;
+		outfile << account->type << endl;
+		outfile << account->number << endl;
+		outfile << account->balance << endl;
+	}
+
+	outfile.close();
+}
 
 int main() {
     cout << "\n*************************************************************************************\n";
